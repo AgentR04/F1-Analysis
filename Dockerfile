@@ -1,22 +1,27 @@
-# Use official lightweight Python image
 FROM python:3.10-slim
 
-# Set working directory
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Create non-root user
+RUN useradd -m appuser
+
 WORKDIR /app
 
-# Copy all project files into the container
-COPY . /app
-
-# Install dependencies
+# Install dependencies (layer caching)
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose Streamlit's default port
+# Copy project files
+COPY . /app
+
+# Switch to non-root user
+USER appuser
+
 EXPOSE 8501
 
-# Set environment variable to avoid Streamlit asking questions
 ENV STREAMLIT_SERVER_HEADLESS=true
 ENV STREAMLIT_SERVER_ENABLECORS=false
 ENV STREAMLIT_SERVER_PORT=8501
 
-# Command to run your Streamlit app
-CMD ["streamlit", "run", "app.py"]
+CMD ["streamlit", "run", "main.py"]

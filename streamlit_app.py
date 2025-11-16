@@ -32,119 +32,29 @@ st.set_page_config(
 # Custom CSS styling
 st.markdown("""
 <style>
-    /* Dark Theme for F1 Dashboard */
-    .stApp {
-        background-color: #0E1117;
-        color: #FAFAFA;
-    }
-    
-    /* Main containers dark styling */
-    .main > div {
-        background-color: #0E1117;
-        color: #FAFAFA;
-    }
-    
     .main-header {
         font-size: 3rem;
         color: #E10600;
         text-align: center;
         font-weight: bold;
         margin-bottom: 2rem;
-        text-shadow: 0 0 20px rgba(225, 6, 0, 0.5);
     }
-    
     .metric-container {
-        background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(40, 10, 10, 0.9));
-        border: 2px solid #E10600;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 0 20px rgba(225, 6, 0, 0.2);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #E10600;
     }
-    
-    .metric-container:hover {
-        transform: translateY(-5px);
-        box-shadow: 
-            0 12px 40px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 0 30px rgba(225, 6, 0, 0.4);
-    }
-    
     .prediction-box {
-        background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 10, 10, 0.95));
+        background: linear-gradient(90deg, #E10600, #FF6B35);
         color: white;
-        padding: 1.5rem;
-        border-radius: 12px;
+        padding: 1rem;
+        border-radius: 0.5rem;
         text-align: center;
         font-weight: bold;
-        box-shadow: 
-            0 8px 25px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 0 20px rgba(225, 6, 0, 0.3);
-        border: 2px solid #E10600;
-        margin: 1rem 0;
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
     }
-    
-    .prediction-box:hover {
-        transform: translateY(-3px);
-        box-shadow: 
-            0 12px 35px rgba(0, 0, 0, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 0 30px rgba(225, 6, 0, 0.5);
-        border-color: #FF4444;
-    }
-    
-    /* Sidebar dark theme */
-    .css-1d391kg {
-        background: linear-gradient(180deg, #0a0a0a 0%, #1a0505 100%);
-    }
-    
-    /* Dark selectbox styling */
     .stSelectbox > div > div > div {
-        background-color: rgba(20, 20, 20, 0.9) !important;
-        border: 2px solid #E10600 !important;
-        border-radius: 8px;
-        color: white !important;
-    }
-    
-    /* Dark slider styling */
-    .stSlider > div > div > div {
-        background: linear-gradient(90deg, #E10600, #FF4444);
-    }
-    
-    /* Dark dataframe styling */
-    .stDataFrame {
-        background: rgba(20, 20, 20, 0.9) !important;
-        border-radius: 10px;
-        border: 1px solid rgba(225, 6, 0, 0.3);
-    }
-    
-    /* Dark metrics */
-    [data-testid="metric-container"] {
-        background: rgba(20, 20, 20, 0.9);
-        border: 1px solid #E10600;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 4px 15px rgba(225, 6, 0, 0.2);
-    }
-    
-    /* Dark text inputs */
-    .stTextInput > div > div > input {
-        background-color: rgba(20, 20, 20, 0.9) !important;
-        color: white !important;
-        border: 2px solid #E10600 !important;
-    }
-    
-    /* Chart backgrounds */
-    .js-plotly-plot {
-        background: transparent !important;
+        background-color: #f0f2f6;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -158,7 +68,7 @@ st.sidebar.title(" Navigation")
 page = st.sidebar.selectbox(
     "Choose Analysis:",
     [" Home Dashboard", " Driver Predictions", " What-If Scenarios", 
-     "‍ Experience Analysis", " Team Impact", " Model Performance", "About"]
+     "‍ Experience Analysis", " Team Impact", " Model Performance", "ℹ About"]
 )
 
 # Load sample data (in real app, this would load your trained models)
@@ -254,41 +164,28 @@ if page == " Home Dashboard":
         st.error("Unable to load F1 predictions. Please check your data.")
         st.stop()
     
-    # Key metrics with custom styling
+    # Key metrics
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.markdown(f"""
-        <div class="prediction-box">
-            <h3 style="margin: 0; font-size: 0.9rem; color: #FAFAFA;">Championship Leader</h3>
-            <h1 style="margin: 10px 0 0 0; font-size: 1.5rem; color: #FFFFFF;">{df.iloc[0]['Driver']}</h1>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+        st.metric("Championship Leader", df.iloc[0]['Driver'])
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col2:
-        st.markdown(f"""
-        <div class="prediction-box">
-            <h3 style="margin: 0; font-size: 0.9rem; color: #FAFAFA;">Predicted Points</h3>
-            <h1 style="margin: 10px 0 0 0; font-size: 1.5rem; color: #FFFFFF;">{df.iloc[0]['Predicted_Points']}</h1>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+        st.metric("Predicted Points", f"{df.iloc[0]['Predicted_Points']}")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col3:
-        st.markdown(f"""
-        <div class="prediction-box">
-            <h3 style="margin: 0; font-size: 0.9rem; color: #FAFAFA;">Win Probability</h3>
-            <h1 style="margin: 10px 0 0 0; font-size: 1.5rem; color: #FFFFFF;">{df.iloc[0]['Win_Probability']:.1%}</h1>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+        st.metric("Win Probability", f"{df.iloc[0]['Win_Probability']:.1%}")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col4:
-        st.markdown(f"""
-        <div class="prediction-box">
-            <h3 style="margin: 0; font-size: 0.9rem; color: #FAFAFA;">ML Algorithms</h3>
-            <h1 style="margin: 10px 0 0 0; font-size: 1.5rem; color: #FFFFFF;">6 Models</h1>
-            <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #00FF88;">↗ Neural Network Best</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+        st.metric("ML Algorithms", "6 Models", "Neural Network Best")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Championship predictions chart
     st.subheader(" Championship Predictions")
@@ -332,35 +229,21 @@ elif page == " Driver Predictions":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(f"🏎️ {selected_driver} Analysis")
-        
-        # Calculate podium probability (estimate based on win probability)
-        podium_prob = min(driver_data['Win_Probability'] * 2.5, 0.98)
-        
-        st.markdown(f"""
-        <div class="prediction-box">
-            <h3 style="margin: 0 0 20px 0; color: #E10600; font-size: 1.2rem;">Driver Statistics</h3>
-            <div style="text-align: left; line-height: 2;">
-                <p style="margin: 10px 0; color: #FAFAFA;"><strong>Team:</strong> <span style="color: #00FF88;">{driver_data['Team']}</span></p>
-                <p style="margin: 10px 0; color: #FAFAFA;"><strong>Predicted Points:</strong> <span style="color: #FFD700; font-size: 1.2rem;">{driver_data['Predicted_Points']}</span></p>
-                <p style="margin: 10px 0; color: #FAFAFA;"><strong>Win Probability:</strong> <span style="color: #FF4444; font-size: 1.1rem;">{driver_data['Win_Probability']:.1%}</span></p>
-                <p style="margin: 10px 0; color: #FAFAFA;"><strong>Podium Probability:</strong> <span style="color: #FF8C00; font-size: 1.1rem;">{podium_prob:.1%}</span></p>
-                <p style="margin: 10px 0; color: #FAFAFA;"><strong>Championship Odds:</strong> <span style="color: #87CEEB;">{driver_data['Championship_Odds']:.1f}:1</span></p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.subheader(f" {selected_driver} Analysis")
+        st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
+        st.markdown(f"**Team:** {driver_data['Team']}")
+        st.markdown(f"**Predicted Points:** {driver_data['Predicted_Points']}")
+        st.markdown(f"**Win Probability:** {driver_data['Win_Probability']:.1%}")
+        st.markdown(f"**Podium Probability:** {driver_data['Podium_Probability']:.1%}")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col2:
         # Performance radar chart
         categories = ['Points', 'Win Prob', 'Podium Prob', 'Experience', 'Team Strength']
-        
-        # Calculate normalized values
-        podium_prob = min(driver_data['Win_Probability'] * 2.5, 0.98)
-        
         values = [
             driver_data['Predicted_Points'] / df['Predicted_Points'].max(),
             driver_data['Win_Probability'],
-            podium_prob,
+            driver_data['Podium_Probability'],
             np.random.uniform(0.3, 0.9),  # Simulated experience
             np.random.uniform(0.4, 0.95)  # Simulated team strength
         ]
@@ -370,32 +253,13 @@ elif page == " Driver Predictions":
             r=values,
             theta=categories,
             fill='toself',
-            name=selected_driver,
-            line_color='#E10600',
-            fillcolor='rgba(225, 6, 0, 0.3)'
+            name=selected_driver
         ))
         fig_radar.update_layout(
             polar=dict(
-                bgcolor='rgba(20, 20, 20, 0.9)',
-                radialaxis=dict(
-                    visible=True, 
-                    range=[0, 1],
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    tickcolor='white'
-                ),
-                angularaxis=dict(
-                    gridcolor='rgba(255, 255, 255, 0.2)',
-                    tickcolor='white'
-                )
+                radialaxis=dict(visible=True, range=[0, 1])
             ),
-            title={
-                'text': f"🏁 {selected_driver} Performance Profile",
-                'x': 0.5,
-                'font': {'color': 'white', 'size': 16}
-            },
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white')
+            title=f"{selected_driver} Performance Profile"
         )
         st.plotly_chart(fig_radar, use_container_width=True)
     
@@ -743,3 +607,6 @@ elif page == "ℹ About":
     st.markdown("**Built with  for Formula 1 fans and data science enthusiasts**")
     st.markdown("*Powered by PySpark, Machine Learning, and 73 years of F1 History*")
 
+# Add footer
+st.markdown("---")
+st.markdown(" **F1 Championship Predictor** | Built with Streamlit | Historical Data: 1950-2022")
