@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ID    = "crypto-lore-468803-u3"
+        PROJECT_ID    = "devops-mini-project-477719"
         REGION        = "us-central1"
         REPO_NAME     = "f1-repo"
         IMAGE_NAME    = "f1-analysis-app"
