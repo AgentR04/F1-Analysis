@@ -5,7 +5,7 @@ metadata:
   labels:
     app: f1-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: f1-app
@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: f1-app
-        image: us-central1-docker.pkg.dev/devops-mini-project-477719/f1-repo/f1-analysis-app:latest  # Jenkins will overwrite with new tag
+        image: f1-analysis-app:latest  # Jenkins will overwrite with new tag
+        imagePullPolicy: Never
         ports:
         - containerPort: 8501
         readinessProbe:
@@ -29,12 +30,12 @@ spec:
           httpGet:
             path: /
             port: 8501
-          initialDelaySeconds: 15
+          initialDelaySeconds: 10
           periodSeconds: 20
         resources:
           requests:
             cpu: "200m"
             memory: "256Mi"
           limits:
-            cpu: "500m"
+            cpu: "400m"
             memory: "512Mi"

@@ -2,10 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ID = "devops-mini-project-477719"
-        REGION     = "us-central1"
-        REPO_NAME  = "f1-repo"
         IMAGE_NAME = "f1-analysis-app"
+        IMAGE_TAG  = ""
     }
 
     stages {
@@ -19,64 +17,56 @@ pipeline {
         stage('Set Image Tag') {
             steps {
                 script {
-                    env.IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    echo "Using Image Tag: ${env.IMAGE_TAG}"
+                    IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    echo "Using Image Tag: ${IMAGE_TAG}"
                 }
             }
         }
 
-        stage('Authenticate to GCP') {
+        stage('Configure Docker for Minikube') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GCLOUD_KEY')]) {
-                    sh """
-                        gcloud auth activate-service-account --key-file=$GCLOUD_KEY
-                        gcloud config set project $PROJECT_ID
-                        gcloud auth configure-docker ${REGION}-docker.pkg.dev -q
-                    """
-                }
+                sh '''
+                    eval $(minikube docker-env)
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh '''
+                    eval $(minikube docker-env)
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                '''
             }
         }
 
         stage('Security Scan - Trivy') {
             steps {
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG} || true"
+                sh '''
+                    trivy image --exit-code 1 --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG} || true
+                '''
             }
         }
 
-        stage('Push Image') {
+        stage('Deploy to Minikube') {
             steps {
-                sh """
-                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${IMAGE_TAG}
-                    docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${IMAGE_TAG}
-                """
-            }
-        }
-
-        stage('Deploy to GKE') {
-            steps {
-                sh """
-                    gcloud container clusters get-credentials f1-cluster --region=$REGION --project=$PROJECT_ID
-                    sed -i "s|IMAGE_PLACEHOLDER|${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${IMAGE_TAG}|g" k8s/deployment.yaml
+                sh '''
+                    sed -i "s|IMAGE_PLACEHOLDER|${IMAGE_NAME}:${IMAGE_TAG}|g" k8s/deployment.yaml
                     kubectl apply -f k8s/deployment.yaml
                     kubectl apply -f k8s/service.yaml
                     kubectl rollout status deployment/f1-app
-                """
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "Deployment Successful!"
+            echo "🚀 Deployment to Minikube Successful!"
         }
         failure {
-            echo "❌ Pipeline Failed — check logs"
+            echo "❌ Pipeline Failed — check logs!"
         }
     }
 }
+
