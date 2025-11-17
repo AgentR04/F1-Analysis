@@ -7,14 +7,12 @@ pipeline {
 
     stages {
 
-        // 1️⃣ Get project source code
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        // 2️⃣ Create unique image tag using git commit
         stage('Set Image Tag') {
             steps {
                 script {
@@ -24,73 +22,72 @@ pipeline {
             }
         }
 
-        // 3️⃣ Point Docker to Minikube's Docker daemon
-        stage('Connect Docker to Minikube') {
+        stage('Start Minikube if not running') {
             steps {
-                sh '''
-                    echo "[INFO] Switching Docker to Minikube environment..."
-                    eval $(minikube -p minikube docker-env)
-                    docker info
-                '''
+                script {
+                    echo "[INFO] Checking Minikube status..."
+                    def status = sh(script: "minikube status --format='{{.Host}}'", returnStdout: true).trim()
+
+                    if (status != "Running") {
+                        echo "[INFO] Starting Minikube..."
+                        sh "minikube start --driver=docker"
+                    } else {
+                        echo "[INFO] Minikube already running"
+                    }
+                }
             }
         }
 
-        // 4️⃣ Build Docker image inside Minikube
+        stage('Configure Docker to use Minikube') {
+            steps {
+                script {
+                    echo "[INFO] Configuring Docker with Minikube env"
+                    sh "eval \$(minikube docker-env)"
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    echo "[INFO] Building Docker image..."
-                    eval $(minikube -p minikube docker-env)
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-                '''
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
-        // 5️⃣ Optional image scan (kept but not blocking)
         stage('Security Scan - Trivy') {
             steps {
-                sh '''
-                    echo "[INFO] Running security scan (ignoring failure)"
-                    trivy image --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG} || true
-                '''
+                sh "trivy image --exit-code 0 ${IMAGE_NAME}:${IMAGE_TAG} || true"
             }
         }
 
-        // 6️⃣ Deploy to Minikube using Kubernetes manifests
         stage('Deploy to Minikube') {
             steps {
-                sh '''
-                    echo "[INFO] Updating Kubernetes deployment manifest..."
-                    sed -i "s|IMAGE_PLACEHOLDER|${IMAGE_NAME}:${IMAGE_TAG}|g" k8s/deployment.yaml
-
-                    echo "[INFO] Applying manifests..."
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-
-                    echo "[INFO] Checking rollout status..."
-                    kubectl rollout status deployment/f1-app
-                '''
+                script {
+                    sh """
+                        sed -i 's|IMAGE_PLACEHOLDER|${IMAGE_NAME}:${IMAGE_TAG}|g' k8s/deployment.yaml
+                        kubectl apply -f k8s/deployment.yaml
+                        kubectl apply -f k8s/service.yaml
+                        kubectl rollout status deployment/f1-app
+                    """
+                }
             }
         }
 
-        // 7️⃣ Show access URL
-        stage('Show Access Info') {
+        stage('Show App URL') {
             steps {
-                sh '''
-                    echo "[INFO] Fetching Minikube Service URL..."
-                    minikube service f1-app --url || true
-                '''
+                script {
+                    def url = sh(script: "minikube service f1-app --url", returnStdout: true).trim()
+                    echo "\\n🚀 Your App is Live: ${url}"
+                }
             }
         }
     }
 
     post {
         success {
-            echo "🎉 Deployment Successful! App should be accessible now."
+            echo "🎉 Deployment Completed Successfully!"
         }
         failure {
-            echo "❌ Pipeline Failed — debug required."
+            echo "❌ Pipeline Failed — Check Logs"
         }
     }
 }
