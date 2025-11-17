@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: f1-app
-        image: f1-analysis-app:latest  # Jenkins will overwrite with new tag
+        image: f1-analysis-app:test  # Jenkins will overwrite with new tag
         imagePullPolicy: Never
         ports:
         - containerPort: 8501
