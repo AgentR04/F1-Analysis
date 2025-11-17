@@ -22,28 +22,6 @@ pipeline {
             }
         }
 
-        stage('Start Minikube') {
-            steps {
-                script {
-                    echo "[INFO] Checking Minikube status..."
-
-                    def status = sh(
-                        script: "minikube status --format='{{.Host}}'",
-                        returnStdout: true
-                    ).trim()
-
-                    if (!status.contains("Running")) {
-                        echo "[INFO] Minikube not running — starting..."
-                        sh """
-                            sudo minikube start --driver=docker --memory=3000mb
-                        """
-                    } else {
-                        echo "[INFO] Minikube already running."
-                    }
-                }
-            }
-        }
-
         stage('Configure Docker to use Minikube') {
             steps {
                 sh """
