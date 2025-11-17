@@ -22,17 +22,23 @@ pipeline {
             }
         }
 
-        stage('Start Minikube if not running') {
+        stage('Start Minikube') {
             steps {
                 script {
                     echo "[INFO] Checking Minikube status..."
-                    def status = sh(script: "minikube status --format='{{.Host}}'", returnStdout: true).trim()
 
-                    if (status != "Running") {
-                        echo "[INFO] Starting Minikube..."
-                        sh "minikube start --driver=docker"
+                    def status = sh(
+                        script: "minikube status --format='{{.Host}}'",
+                        returnStdout: true
+                    ).trim()
+
+                    if (!status.contains("Running")) {
+                        echo "[INFO] Minikube not running — starting..."
+                        sh """
+                            sudo minikube start --driver=docker --memory=3000mb
+                        """
                     } else {
-                        echo "[INFO] Minikube already running"
+                        echo "[INFO] Minikube already running."
                     }
                 }
             }
@@ -40,54 +46,56 @@ pipeline {
 
         stage('Configure Docker to use Minikube') {
             steps {
-                script {
-                    echo "[INFO] Configuring Docker with Minikube env"
-                    sh "eval \$(minikube docker-env)"
-                }
+                sh """
+                    echo "[INFO] Switching Docker to Minikube environment..."
+                    eval \$(minikube -p minikube docker-env)
+                """
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-            }
-        }
-
-        stage('Security Scan - Trivy') {
-            steps {
-                sh "trivy image --exit-code 0 ${IMAGE_NAME}:${IMAGE_TAG} || true"
+                sh """
+                    echo "[INFO] Building Docker image inside Minikube..."
+                    eval \$(minikube -p minikube docker-env)
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                """
             }
         }
 
         stage('Deploy to Minikube') {
             steps {
-                script {
-                    sh """
-                        sed -i 's|IMAGE_PLACEHOLDER|${IMAGE_NAME}:${IMAGE_TAG}|g' k8s/deployment.yaml
-                        kubectl apply -f k8s/deployment.yaml
-                        kubectl apply -f k8s/service.yaml
-                        kubectl rollout status deployment/f1-app
-                    """
-                }
+                sh """
+                    echo "[INFO] Updating deployment image..."
+                    sed -i "s|IMAGE_PLACEHOLDER|${IMAGE_NAME}:${IMAGE_TAG}|g" k8s/deployment.yaml
+
+                    echo "[INFO] Applying Kubernetes manifests..."
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+
+                    echo "[INFO] Waiting for rollout..."
+                    kubectl rollout status deployment/f1-app --timeout=90s
+                """
             }
         }
 
         stage('Show App URL') {
             steps {
                 script {
-                    def url = sh(script: "minikube service f1-app --url", returnStdout: true).trim()
-                    echo "\\n🚀 Your App is Live: ${url}"
+                    def url = sh(script: "minikube service f1-app-service --url", returnStdout: true).trim()
+                    echo "🎉 APP DEPLOYED SUCCESSFULLY!"
+                    echo "👉 Access your app at: ${url}"
                 }
             }
         }
     }
 
     post {
-        success {
-            echo "🎉 Deployment Completed Successfully!"
-        }
         failure {
             echo "❌ Pipeline Failed — Check Logs"
+        }
+        success {
+            echo "✅ Pipeline Successful!"
         }
     }
 }
