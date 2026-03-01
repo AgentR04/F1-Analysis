@@ -24,7 +24,7 @@ warnings.filterwarnings('ignore')
 # Page configuration
 st.set_page_config(
     page_title="F1 Championship Predictor",
-    page_icon="",
+    page_icon="🏎️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -168,24 +168,16 @@ if page == " Home Dashboard":
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
         st.metric("Championship Leader", df.iloc[0]['Driver'])
-        st.markdown('</div>', unsafe_allow_html=True)
     
     with col2:
-        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
         st.metric("Predicted Points", f"{df.iloc[0]['Predicted_Points']}")
-        st.markdown('</div>', unsafe_allow_html=True)
     
     with col3:
-        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
         st.metric("Win Probability", f"{df.iloc[0]['Win_Probability']:.1%}")
-        st.markdown('</div>', unsafe_allow_html=True)
     
     with col4:
-        st.markdown('<div class="metric-container">', unsafe_allow_html=True)
         st.metric("ML Algorithms", "6 Models", "Neural Network Best")
-        st.markdown('</div>', unsafe_allow_html=True)
     
     # Championship predictions chart
     st.subheader(" Championship Predictions")
@@ -230,22 +222,26 @@ elif page == " Driver Predictions":
     
     with col1:
         st.subheader(f" {selected_driver} Analysis")
-        st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
-        st.markdown(f"**Team:** {driver_data['Team']}")
-        st.markdown(f"**Predicted Points:** {driver_data['Predicted_Points']}")
-        st.markdown(f"**Win Probability:** {driver_data['Win_Probability']:.1%}")
-        st.markdown(f"**Podium Probability:** {driver_data['Podium_Probability']:.1%}")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="prediction-box">
+            <p><strong>Team:</strong> {driver_data['Team']}</p>
+            <p><strong>Predicted Points:</strong> {driver_data['Predicted_Points']}</p>
+            <p><strong>Win Probability:</strong> {driver_data['Win_Probability']:.1%}</p>
+            <p><strong>Podium Probability:</strong> {driver_data['Podium_Probability']:.1%}</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
         # Performance radar chart
         categories = ['Points', 'Win Prob', 'Podium Prob', 'Experience', 'Team Strength']
+        # Use a deterministic seed based on driver name for stable values
+        rng = np.random.default_rng(abs(hash(selected_driver)) % (2**32))
         values = [
             driver_data['Predicted_Points'] / df['Predicted_Points'].max(),
             driver_data['Win_Probability'],
             driver_data['Podium_Probability'],
-            np.random.uniform(0.3, 0.9),  # Simulated experience
-            np.random.uniform(0.4, 0.95)  # Simulated team strength
+            rng.uniform(0.3, 0.9),   # Simulated experience
+            rng.uniform(0.4, 0.95)   # Simulated team strength
         ]
         
         fig_radar = go.Figure()
@@ -317,12 +313,16 @@ elif page == " What-If Scenarios":
     st.subheader(" Before vs After Scenario")
     
     comparison_data = []
-    for i in range(5):
+    orig_top5_drivers = df.head(5)['Driver'].tolist()
+    for driver in orig_top5_drivers:
+        orig_pts = df[df['Driver'] == driver]['Predicted_Points'].iloc[0]
+        scen_row = scenario_df[scenario_df['Driver'] == driver]
+        scen_pts = scen_row['Predicted_Points'].iloc[0] if not scen_row.empty else orig_pts
         comparison_data.append({
-            'Driver': df.iloc[i]['Driver'],
-            'Original_Points': df.iloc[i]['Predicted_Points'],
-            'Scenario_Points': scenario_df.iloc[i]['Predicted_Points'],
-            'Change': scenario_df.iloc[i]['Predicted_Points'] - df.iloc[i]['Predicted_Points']
+            'Driver': driver,
+            'Original_Points': orig_pts,
+            'Scenario_Points': scen_pts,
+            'Change': scen_pts - orig_pts
         })
     
     comparison_df = pd.DataFrame(comparison_data)
