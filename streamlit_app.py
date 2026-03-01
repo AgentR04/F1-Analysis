@@ -53,22 +53,23 @@ st.markdown("""
         text-align: center;
         font-weight: bold;
     }
-    .stSelectbox > div > div > div {
+    [data-testid="stSelectbox"] > div > div {
         background-color: #f0f2f6;
+        color: #262730;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Title and header
-st.markdown('<h1 class="main-header"> F1 CHAMPIONSHIP PREDICTOR</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🏆 F1 CHAMPIONSHIP PREDICTOR</h1>', unsafe_allow_html=True)
 st.markdown("### Advanced Machine Learning Dashboard for Formula 1 Analysis")
 
 # Sidebar navigation
-st.sidebar.title(" Navigation")
+st.sidebar.title("🏎️ Navigation")
 page = st.sidebar.selectbox(
     "Choose Analysis:",
-    [" Home Dashboard", " Driver Predictions", " What-If Scenarios", 
-     "‍ Experience Analysis", " Team Impact", " Model Performance", "ℹ About"]
+    ["🏠 Home Dashboard", "🏎️ Driver Predictions", "🔮 What-If Scenarios",
+     "👨‍💼 Experience Analysis", "🔧 Team Impact", "📊 Model Performance", "ℹ️ About"]
 )
 
 # Load sample data (in real app, this would load your trained models)
@@ -154,8 +155,8 @@ def load_f1_predictions():
         return pd.DataFrame()
 
 # Main content based on page selection
-if page == " Home Dashboard":
-    st.header(" F1 Championship Dashboard")
+if page == "🏠 Home Dashboard":
+    st.header("🏆 F1 Championship Dashboard")
     
     # Load predictions
     df = load_f1_predictions()
@@ -180,7 +181,7 @@ if page == " Home Dashboard":
         st.metric("ML Algorithms", "6 Models", "Neural Network Best")
     
     # Championship predictions chart
-    st.subheader(" Championship Predictions")
+    st.subheader("🏆 Championship Predictions")
     
     fig = px.bar(df, x='Driver', y='Predicted_Points', color='Predicted_Points',
                  color_continuous_scale='Reds', title="2024 Championship Point Predictions")
@@ -191,21 +192,21 @@ if page == " Home Dashboard":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(" Win Probability")
+        st.subheader("🥇 Win Probability")
         fig_prob = px.pie(df.head(6), values='Win_Probability', names='Driver',
                          title="Season Win Probability Distribution")
         st.plotly_chart(fig_prob, use_container_width=True)
     
     with col2:
-        st.subheader(" Championship Odds")
+        st.subheader("🎲 Championship Odds")
         fig_odds = px.bar(df.head(8), x='Driver', y='Championship_Odds',
                          title="Championship Betting Odds (Lower = Better)",
                          log_y=True)
         fig_odds.update_traces(textposition="outside")
         st.plotly_chart(fig_odds, use_container_width=True)
 
-elif page == " Driver Predictions":
-    st.header(" Individual Driver Predictions")
+elif page == "🏎️ Driver Predictions":
+    st.header("🏎️ Individual Driver Predictions")
     
     df = load_f1_predictions()
     
@@ -221,7 +222,7 @@ elif page == " Driver Predictions":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(f" {selected_driver} Analysis")
+        st.subheader(f"📋 {selected_driver} Analysis")
         st.markdown(f"""
         <div class="prediction-box">
             <p><strong>Team:</strong> {driver_data['Team']}</p>
@@ -260,7 +261,7 @@ elif page == " Driver Predictions":
         st.plotly_chart(fig_radar, use_container_width=True)
     
     # Comparison with top drivers
-    st.subheader(" Comparison with Championship Contenders")
+    st.subheader("📊 Comparison with Championship Contenders")
     top_drivers = df.head(5)
     
     fig_comparison = px.bar(
@@ -272,18 +273,18 @@ elif page == " Driver Predictions":
     )
     st.plotly_chart(fig_comparison, use_container_width=True)
 
-elif page == " What-If Scenarios":
-    st.header(" Championship What-If Scenarios")
+elif page == "🔮 What-If Scenarios":
+    st.header("🔮 Championship What-If Scenarios")
     
     df = load_f1_predictions()
     
-    st.markdown("###  Interactive Scenario Builder")
+    st.markdown("### 🎯 Interactive Scenario Builder")
     st.markdown("Adjust race outcomes and see how they affect the championship!")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(" Race Outcome Simulator")
+        st.subheader("🏁 Race Outcome Simulator")
         
         # Select race impact
         race_impact = st.slider("Races Remaining", 1, 10, 5)
@@ -301,7 +302,7 @@ elif page == " What-If Scenarios":
         scenario_df = scenario_df.sort_values('Predicted_Points', ascending=False).reset_index(drop=True)
         
     with col2:
-        st.subheader(" Scenario Results")
+        st.subheader("📈 Scenario Results")
         
         # Show top 5 in scenario
         st.dataframe(
@@ -310,7 +311,7 @@ elif page == " What-If Scenarios":
         )
     
     # Before vs After comparison
-    st.subheader(" Before vs After Scenario")
+    st.subheader("⚖️ Before vs After Scenario")
     
     comparison_data = []
     orig_top5_drivers = df.head(5)['Driver'].tolist()
@@ -337,8 +338,8 @@ elif page == " What-If Scenarios":
     )
     st.plotly_chart(fig_scenario, use_container_width=True)
 
-elif page == "‍ Experience Analysis":
-    st.header(" Driver Experience Impact Analysis")
+elif page == "👨‍💼 Experience Analysis":
+    st.header("👨‍💼 Driver Experience Impact Analysis")
     
     # Simulate experience data based on known F1 drivers
     experience_data = {
@@ -354,7 +355,7 @@ elif page == "‍ Experience Analysis":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(" Experience vs Performance")
+        st.subheader("📈 Experience vs Performance")
         fig_exp = px.scatter(
             exp_df,
             x='Years_Experience',
@@ -367,7 +368,7 @@ elif page == "‍ Experience Analysis":
         st.plotly_chart(fig_exp, use_container_width=True)
     
     with col2:
-        st.subheader(" Race Experience Distribution")
+        st.subheader("🏁 Race Experience Distribution")
         fig_races = px.bar(
             exp_df,
             x='Driver',
@@ -406,8 +407,8 @@ elif page == "‍ Experience Analysis":
     )
     st.plotly_chart(fig_age, use_container_width=True)
 
-elif page == " Team Impact":
-    st.header(" Constructor Team Analysis")
+elif page == "🔧 Team Impact":
+    st.header("🔧 Constructor Team Analysis")
     
     # Team performance data
     team_data = {
@@ -423,7 +424,7 @@ elif page == " Team Impact":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(" Budget vs Performance")
+        st.subheader("💰 Budget vs Performance")
         fig_budget = px.scatter(
             team_df,
             x='Budget_Million',
@@ -435,7 +436,7 @@ elif page == " Team Impact":
         st.plotly_chart(fig_budget, use_container_width=True)
     
     with col2:
-        st.subheader(" Team Strength Analysis")
+        st.subheader("💪 Team Strength Analysis")
         
         # Radar chart for team comparison
         fig_team_radar = go.Figure()
@@ -456,7 +457,7 @@ elif page == " Team Impact":
         st.plotly_chart(fig_team_radar, use_container_width=True)
     
     # Team impact on championship
-    st.subheader(" Team Impact on Championship Odds")
+    st.subheader("🏆 Team Impact on Championship Odds")
     
     st.markdown("""
     **Machine Learning Analysis - Team Factor Importance:**
@@ -467,8 +468,8 @@ elif page == " Team Impact":
     - **Driver-Team Synergy:** 20% performance boost when optimized
     """)
 
-elif page == " Model Performance":
-    st.header(" Machine Learning Model Performance")
+elif page == "📊 Model Performance":
+    st.header("📊 Machine Learning Model Performance")
     
     # Model comparison data
     models_data = {
@@ -484,7 +485,7 @@ elif page == " Model Performance":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(" Model Accuracy Comparison")
+        st.subheader("🎯 Model Accuracy Comparison")
         fig_accuracy = px.bar(
             models_df,
             x='Model',
@@ -497,7 +498,7 @@ elif page == " Model Performance":
         st.plotly_chart(fig_accuracy, use_container_width=True)
     
     with col2:
-        st.subheader(" Performance vs Speed Trade-off")
+        st.subheader("⚡ Performance vs Speed Trade-off")
         fig_speed = px.scatter(
             models_df,
             x='Training_Time',
@@ -510,7 +511,7 @@ elif page == " Model Performance":
         st.plotly_chart(fig_speed, use_container_width=True)
     
     # Feature importance
-    st.subheader(" Feature Importance Analysis")
+    st.subheader("🔍 Feature Importance Analysis")
     
     feature_data = {
         'Feature': ['Driver Experience', 'Team Performance', 'Previous Season Points', 
@@ -533,34 +534,34 @@ elif page == " Model Performance":
     st.plotly_chart(fig_features, use_container_width=True)
     
     # Model metrics
-    st.subheader(" Detailed Model Metrics")
+    st.subheader("📋 Detailed Model Metrics")
     st.dataframe(models_df, use_container_width=True)
 
-elif page == "ℹ About":
-    st.header("ℹ About F1 Championship Predictor")
+elif page == "ℹ️ About":
+    st.header("ℹ️ About F1 Championship Predictor")
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
         st.markdown("""
-        ###  **Advanced F1 Machine Learning System**
+        ### 🏆 **Advanced F1 Machine Learning System**
         
         This application represents a comprehensive Formula 1 championship prediction system built with cutting-edge technology:
         
-        ** Data Science Excellence:**
+        📊 **Data Science Excellence:**
         - **73 years** of historical F1 data (1950-2022)
         - **24,655 race records** processed with PySpark
         - **6 machine learning algorithms** compared and optimized
         - **99.85% accuracy** achieved with Neural Network (MLP)
         
-        ** Technology Stack:**
+        🛠️ **Technology Stack:**
         - **PySpark 4.0.1** for big data processing
         - **Scikit-learn** for machine learning
         - **Streamlit** for interactive web interface
         - **Plotly** for dynamic visualizations
         - **Historical data analysis** spanning 7+ decades
         
-        ** Features:**
+        ✨ **Features:**
         - Championship probability calculations
         - Individual driver performance analysis
         - What-if scenario simulations
@@ -570,22 +571,22 @@ elif page == "ℹ About":
         """)
     
     with col2:
-        st.markdown("###  **Model Performance**")
+        st.markdown("### 📊 **Model Performance**")
         st.metric("Best Model", "Neural Network")
         st.metric("Accuracy", "99.85%")
         st.metric("R² Score", "0.9985")
         st.metric("Data Points", "24,655")
         
-        st.markdown("###  **Data Sources**")
-        st.info(" Historical F1 Data (1950-2022)")
-        st.info(" Championship Records")
-        st.info(" Driver & Constructor Stats")
-        st.info(" Performance Analytics")
+        st.markdown("### 📂 **Data Sources**")
+        st.info("📁 Historical F1 Data (1950-2022)")
+        st.info("🏆 Championship Records")
+        st.info("👨‍💼 Driver & Constructor Stats")
+        st.info("📈 Performance Analytics")
     
     st.markdown("---")
     
     st.markdown("""
-    ###  **Prediction Methodology**
+    ### 🔬 **Prediction Methodology**
     
     Our championship predictions are based on:
     
@@ -596,7 +597,7 @@ elif page == "ℹ About":
     5. **Statistical Pattern Recognition** - Advanced ML pattern detection
     6. **Cross-Validation** - Robust model validation across multiple seasons
     
-    ** Key Algorithms:**
+    🤖 **Key Algorithms:**
     - **Neural Network (MLP)** - Primary prediction engine (99.85% accuracy)
     - **Random Forest** - Feature importance analysis
     - **XGBoost** - Gradient boosting validation
@@ -604,9 +605,9 @@ elif page == "ℹ About":
     """)
     
     st.markdown("---")
-    st.markdown("**Built with  for Formula 1 fans and data science enthusiasts**")
+    st.markdown("**Built with ❤️ for Formula 1 fans and data science enthusiasts**")
     st.markdown("*Powered by PySpark, Machine Learning, and 73 years of F1 History*")
 
 # Add footer
 st.markdown("---")
-st.markdown(" **F1 Championship Predictor** | Built with Streamlit | Historical Data: 1950-2022")
+st.markdown("🏎️ **F1 Championship Predictor** | Built with Streamlit | Historical Data: 1950-2022")
